@@ -50,6 +50,8 @@ public partial class GoogleDriveBrowserWindow : Window
         catch (Exception ex)
         {
             StatusText.Text = $"Помилка: {ex.Message}";
+            var msg = new MessageBoxWindow("Помилка Google Drive", ex.Message);
+            await msg.ShowDialog(this);
         }
     }
 

@@ -30,7 +30,7 @@ public partial class MainViewModel : ViewModelBase
 
     // Делегати для взаємодії з UI
     public Func<string, string, Task<string?>>? RequestOpenFileDialog { get; set; }
-    public Func<string, string, Task<string?>>? RequestSaveFileDialog { get; set; }
+    public Func<string, string, string, Task<string?>>? RequestSaveFileDialog { get; set; }
     public Func<string, string, Task>? RequestMessageBox { get; set; }
     public Func<Task<GoogleDriveFileInfo?>>? RequestBrowseDriveDialog { get; set; }
 
@@ -354,12 +354,17 @@ public partial class MainViewModel : ViewModelBase
         string? outPath = null;
         if (RequestSaveFileDialog != null)
         {
-            outPath = await RequestSaveFileDialog("Зберегти згенерований HTML-звіт", "HTML файли (*.html)|*.html");
+            outPath = await RequestSaveFileDialog("Зберегти згенерований HTML-звіт", ".html", "HTML файли (*.html)");
         }
 
         if (string.IsNullOrEmpty(outPath))
         {
             outPath = Path.Combine(Path.GetDirectoryName(XmlPath) ?? AppDomain.CurrentDomain.BaseDirectory, "catalog_transformed.html");
+        }
+
+        if (!outPath.EndsWith(".html", StringComparison.OrdinalIgnoreCase))
+        {
+            outPath += ".html";
         }
 
         IsBusy = true;
@@ -401,18 +406,24 @@ public partial class MainViewModel : ViewModelBase
         }
 
         bool isXml = SelectedExportFormat == 0;
-        var filter = isXml ? "XML файли (*.xml)|*.xml" : "HTML файли (*.html)|*.html";
-        var defaultExt = isXml ? "filtered_results.xml" : "filtered_results.html";
+        var ext = isXml ? ".xml" : ".html";
+        var filterName = isXml ? "XML файли (*.xml)" : "HTML файли (*.html)";
+        var defaultFileName = isXml ? "filtered_results.xml" : "filtered_results.html";
 
         string? outPath = null;
         if (RequestSaveFileDialog != null)
         {
-            outPath = await RequestSaveFileDialog("Зберегти відфільтровані результати", filter);
+            outPath = await RequestSaveFileDialog("Зберегти відфільтровані результати", ext, filterName);
         }
 
         if (string.IsNullOrEmpty(outPath))
         {
-            outPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, defaultExt);
+            outPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, defaultFileName);
+        }
+
+        if (!outPath.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+        {
+            outPath += ext;
         }
 
         IsBusy = true;

@@ -56,14 +56,32 @@ public partial class MainWindow : Window
         return null;
     }
 
-    private async Task<string?> SaveFilePickerAsync(string title, string filter)
+    private async Task<string?> SaveFilePickerAsync(string title, string defaultExt, string filterName)
     {
+        var extWithoutDot = defaultExt.TrimStart('.');
         var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = title
+            Title = title,
+            DefaultExtension = extWithoutDot,
+            SuggestedFileName = $"results.{extWithoutDot}",
+            FileTypeChoices = new[]
+            {
+                new FilePickerFileType(filterName)
+                {
+                    Patterns = new[] { $"*.{extWithoutDot}" }
+                }
+            }
         });
 
-        return file?.Path.LocalPath;
+        if (file == null) return null;
+
+        var path = file.Path.LocalPath;
+        if (!path.EndsWith(defaultExt, StringComparison.OrdinalIgnoreCase))
+        {
+            path += defaultExt;
+        }
+
+        return path;
     }
 
     private async Task ShowMessageBoxAsync(string title, string message)
