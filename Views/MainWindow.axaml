@@ -273,6 +273,8 @@
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
                       CanUserResizeColumns="True"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                       GridLinesVisibility="All"
                       BorderThickness="0">
                 <DataGrid.Columns>
@@ -281,25 +283,25 @@
                                         Width="60" />
                     <DataGridTextColumn Header="Назва публікації"
                                         Binding="{Binding Title}"
-                                        Width="2.5*" />
+                                        Width="260" />
                     <DataGridTextColumn Header="Автор"
                                         Binding="{Binding Author}"
-                                        Width="1.4*" />
+                                        Width="160" />
                     <DataGridTextColumn Header="Категорія"
                                         Binding="{Binding Category}"
-                                        Width="1.2*" />
+                                        Width="150" />
                     <DataGridTextColumn Header="Факультет"
                                         Binding="{Binding Faculty}"
-                                        Width="1.4*" />
+                                        Width="220" />
                     <DataGridTextColumn Header="Кафедра"
                                         Binding="{Binding Department}"
-                                        Width="1.4*" />
+                                        Width="180" />
                     <DataGridTextColumn Header="Рік"
                                         Binding="{Binding Year}"
                                         Width="70" />
                     <DataGridTextColumn Header="Анотація"
                                         Binding="{Binding Annotation}"
-                                        Width="3*" />
+                                        Width="450" />
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
