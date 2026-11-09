@@ -176,6 +176,11 @@ public partial class MainViewModel : ViewModelBase
         if (RequestOpenFileDialog != null)
         {
             selectedFile = await RequestOpenFileDialog("Оберіть файл бібліотеки XML", "XML файли (*.xml)|*.xml");
+            if (string.IsNullOrEmpty(selectedFile))
+            {
+                StatusMessage = "Вибір файлу XML скасовано.";
+                return;
+            }
         }
 
         if (!string.IsNullOrEmpty(selectedFile))
@@ -341,7 +346,13 @@ public partial class MainViewModel : ViewModelBase
         {
             if (RequestOpenFileDialog != null)
             {
-                XslPath = await RequestOpenFileDialog("Оберіть файл стилів XSLT", "XSL файли (*.xsl;*.xslt)|*.xsl;*.xslt") ?? string.Empty;
+                var chosen = await RequestOpenFileDialog("Оберіть файл стилів XSLT", "XSL файли (*.xsl;*.xslt)|*.xsl;*.xslt");
+                if (string.IsNullOrEmpty(chosen))
+                {
+                    StatusMessage = "Вибір файлу XSLT скасовано.";
+                    return;
+                }
+                XslPath = chosen;
             }
 
             if (string.IsNullOrWhiteSpace(XslPath) || !File.Exists(XslPath))
