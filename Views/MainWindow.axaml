@@ -1,20 +1,323 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:XMLApp.ViewModels"
+        xmlns:models="using:XMLApp.Models"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1150" d:DesignHeight="750"
         x:Class="XMLApp.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Кафедральна бібліотека (XML/XSLT/Google Drive)">
+        Title="Кафедральна бібліотека"
+        MinWidth="950" MinHeight="650"
+        WindowStartupLocation="CenterScreen"
+        Background="#f8fafc">
 
     <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <TextBlock Text="{Binding StatusMessage}"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center" />
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16">
 
+        <!-- 1. Заголовок програми -->
+        <Border Grid.Row="0"
+                Background="#1e3a8a"
+                CornerRadius="8"
+                Padding="16,14"
+                Margin="0,0,0,12"
+                BoxShadow="0 2 8 0 #20000000">
+            <TextBlock Text="Кафедральна бібліотека"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       VerticalAlignment="Center" />
+        </Border>
+
+        <!-- 2. Панель керування: Файли, Фільтри, Стратегії та Експорт -->
+        <Border Grid.Row="1"
+                Background="White"
+                BorderBrush="#e2e8f0"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="14"
+                Margin="0,0,0,12">
+            <StackPanel Spacing="12">
+
+                <!-- 2.1. Рядок вибору джерел файлів (XML та XSLT) -->
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,4">
+                    <TextBlock Grid.Column="0"
+                               Text="XML Каталог:"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,10,0" />
+                    <TextBox Grid.Column="1"
+                             Text="{Binding XmlPath}"
+                             PlaceholderText="Шлях до вхідного XML файлу..."
+                             IsReadOnly="True"
+                             Margin="0,0,8,0" />
+                    <Button Grid.Column="2"
+                            Content="📁 Огляд локально..."
+                            Command="{Binding LoadLocalCommand}"
+                            Background="#e0e7ff"
+                            Foreground="#3730a3"
+                            FontWeight="Medium"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Margin="0,0,8,0" />
+                    <Button Grid.Column="3"
+                            Content="☁ Огляд Google Drive..."
+                            Command="{Binding LoadFromDriveCommand}"
+                            Background="#e0e7ff"
+                            Foreground="#3730a3"
+                            FontWeight="Medium"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center" />
+                </Grid>
+
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <TextBlock Grid.Column="0"
+                               Text="XSLT Стиль:"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,14,0" />
+                    <TextBox Grid.Column="1"
+                             Text="{Binding XslPath}"
+                             PlaceholderText="Шлях до файлу стилів XSLT (*.xsl)..."
+                             IsReadOnly="True"
+                             Margin="0,0,8,0" />
+                    <Button Grid.Column="2"
+                            Content="Огляд XSLT..."
+                            Click="ChooseXslButton_Click"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Background="#f1f5f9"
+                            Foreground="#334155" />
+                </Grid>
+
+                <Separator Background="#e2e8f0" Height="1" Margin="0,4" />
+
+                <!-- 2.2. Блок фільтрів та ключових слів -->
+                <Grid ColumnDefinitions="*,*,*,*">
+                    <!-- Автор -->
+                    <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                        <TextBlock Text="Автор:"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="#475569"
+                                   Margin="0,0,0,4" />
+                        <ComboBox ItemsSource="{Binding AvailableAuthors}"
+                                  SelectedItem="{Binding SelectedAuthor}"
+                                  HorizontalAlignment="Stretch"
+                                  PlaceholderText="Усі автори" />
+                    </StackPanel>
+
+                    <!-- Категорія -->
+                    <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                        <TextBlock Text="Категорія:"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="#475569"
+                                   Margin="0,0,0,4" />
+                        <ComboBox ItemsSource="{Binding AvailableCategories}"
+                                  SelectedItem="{Binding SelectedCategory}"
+                                  HorizontalAlignment="Stretch"
+                                  PlaceholderText="Усі категорії" />
+                    </StackPanel>
+
+                    <!-- Факультет -->
+                    <StackPanel Grid.Column="2" Margin="6,0,6,0">
+                        <TextBlock Text="Факультет:"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="#475569"
+                                   Margin="0,0,0,4" />
+                        <ComboBox ItemsSource="{Binding AvailableFaculties}"
+                                  SelectedItem="{Binding SelectedFaculty}"
+                                  HorizontalAlignment="Stretch"
+                                  PlaceholderText="Усі факультети" />
+                    </StackPanel>
+
+                    <!-- Кафедра -->
+                    <StackPanel Grid.Column="3" Margin="6,0,0,0">
+                        <TextBlock Text="Кафедра:"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="#475569"
+                                   Margin="0,0,0,4" />
+                        <ComboBox ItemsSource="{Binding AvailableDepartments}"
+                                  SelectedItem="{Binding SelectedDepartment}"
+                                  HorizontalAlignment="Stretch"
+                                  PlaceholderText="Усі кафедри" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Пошук за словом та вибір стратегії -->
+                <Grid ColumnDefinitions="2*,1.2*,Auto,Auto,Auto" Margin="0,4,0,0">
+                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                        <TextBlock Text="Пошук за ключовим словом (назва / анотація):"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="#475569"
+                                   Margin="0,0,0,4" />
+                        <TextBox Text="{Binding Keyword}"
+                                 PlaceholderText="Введіть ключове слово..." />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                        <TextBlock Text="Стратегія парсингу:"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="#475569"
+                                   Margin="0,0,0,4" />
+                        <ComboBox SelectedIndex="{Binding SelectedStrategyIndex}"
+                                  HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="SAX (XmlReader)" />
+                            <ComboBoxItem Content="DOM (XmlDocument)" />
+                            <ComboBoxItem Content="LINQ to XML (XDocument)" />
+                        </ComboBox>
+                    </StackPanel>
+
+                    <!-- Кнопка Пошук -->
+                    <Button Grid.Column="2"
+                            Content="🔍 Шукати"
+                            Command="{Binding SearchCommand}"
+                            Background="#2563eb"
+                            Foreground="White"
+                            FontWeight="SemiBold"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            Height="32"
+                            Padding="16,0"
+                            Margin="0,0,8,0" />
+
+                    <!-- Кнопка Очистити -->
+                    <Button Grid.Column="3"
+                            Content="❌ Очистити"
+                            Command="{Binding ClearCommand}"
+                            Background="#f1f5f9"
+                            Foreground="#475569"
+                            FontWeight="Medium"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            Height="32"
+                            Padding="12,0"
+                            Margin="0,0,8,0" />
+
+                    <!-- Кнопка XSLT -->
+                    <Button Grid.Column="4"
+                            Content="⚡ XSLT в HTML"
+                            Command="{Binding TransformHtmlCommand}"
+                            Background="#059669"
+                            Foreground="White"
+                            FontWeight="SemiBold"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            VerticalAlignment="Bottom"
+                            Height="32"
+                            Padding="14,0" />
+                </Grid>
+
+                <Separator Background="#e2e8f0" Height="1" Margin="0,4" />
+
+                <!-- 2.3. Панель експорту -->
+                <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" VerticalAlignment="Center">
+                    <TextBlock Grid.Column="0"
+                               Text="Експорт результатів:"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="0,0,12,0" />
+                    <ComboBox Grid.Column="1"
+                              SelectedIndex="{Binding SelectedExportFormat}"
+                              Width="140"
+                              Margin="0,0,10,0">
+                        <ComboBoxItem Content="Формат XML" />
+                        <ComboBoxItem Content="Формат HTML" />
+                    </ComboBox>
+                    <Button Grid.Column="2"
+                            Content="💾 Зберегти на диск"
+                            Command="{Binding SaveLocalCommand}"
+                            Background="#f8fafc"
+                            BorderBrush="#cbd5e1"
+                            BorderThickness="1"
+                            Foreground="#1e293b"
+                            FontWeight="Medium"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
+                            Margin="0,0,8,0" />
+                    <Button Grid.Column="3"
+                            Content="☁ Зберегти на Google Drive"
+                            Command="{Binding SaveToDriveCommand}"
+                            Background="#f8fafc"
+                            BorderBrush="#cbd5e1"
+                            BorderThickness="1"
+                            Foreground="#1e293b"
+                            FontWeight="Medium"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center" />
+                </Grid>
+
+            </StackPanel>
+        </Border>
+
+        <!-- 3. Таблиця результатів -->
+        <Border Grid.Row="2"
+                Background="White"
+                BorderBrush="#e2e8f0"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="0"
+                ClipToBounds="True">
+            <DataGrid ItemsSource="{Binding SearchResults}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      GridLinesVisibility="All"
+                      BorderThickness="0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID"
+                                        Binding="{Binding Id}"
+                                        Width="60" />
+                    <DataGridTextColumn Header="Назва публікації"
+                                        Binding="{Binding Title}"
+                                        Width="2.5*" />
+                    <DataGridTextColumn Header="Автор"
+                                        Binding="{Binding Author}"
+                                        Width="1.4*" />
+                    <DataGridTextColumn Header="Категорія"
+                                        Binding="{Binding Category}"
+                                        Width="1.2*" />
+                    <DataGridTextColumn Header="Факультет"
+                                        Binding="{Binding Faculty}"
+                                        Width="1.4*" />
+                    <DataGridTextColumn Header="Кафедра"
+                                        Binding="{Binding Department}"
+                                        Width="1.4*" />
+                    <DataGridTextColumn Header="Рік"
+                                        Binding="{Binding Year}"
+                                        Width="70" />
+                    <DataGridTextColumn Header="Анотація"
+                                        Binding="{Binding Annotation}"
+                                        Width="3*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- 4. Рядок стану та індикатор зайнятості -->
+        <Grid Grid.Row="3"
+              ColumnDefinitions="*,Auto"
+              Margin="4,8,4,0">
+            <TextBlock Grid.Column="0"
+                       Text="{Binding StatusMessage}"
+                       FontSize="12.5"
+                       Foreground="#64748b"
+                       VerticalAlignment="Center" />
+            <ProgressBar Grid.Column="1"
+                         IsIndeterminate="True"
+                         IsVisible="{Binding IsBusy}"
+                         Width="120" Height="14"
+                         VerticalAlignment="Center" />
+        </Grid>
+
+    </Grid>
 </Window>

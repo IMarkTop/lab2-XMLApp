@@ -32,6 +32,7 @@ public partial class MainViewModel : ViewModelBase
     public Func<string, string, Task<string?>>? RequestOpenFileDialog { get; set; }
     public Func<string, string, Task<string?>>? RequestSaveFileDialog { get; set; }
     public Func<string, string, Task>? RequestMessageBox { get; set; }
+    public Func<Task<GoogleDriveFileInfo?>>? RequestBrowseDriveDialog { get; set; }
 
     #region Властивості стану (Observable Properties)
 
@@ -186,30 +187,46 @@ public partial class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Завантаження XML-файлу з Google Drive за його ID.
+    /// Завантаження XML-файлу з Google Drive через вікно огляду або за ID.
     /// </summary>
     [RelayCommand]
     public async Task LoadFromDriveAsync()
     {
-        if (string.IsNullOrWhiteSpace(DriveFileId))
+        string? targetFileId = DriveFileId?.Trim();
+        string fileName = "catalog.xml";
+
+        if (RequestBrowseDriveDialog != null)
+        {
+            var chosen = await RequestBrowseDriveDialog();
+            if (chosen == null)
+            {
+                return; // Користувач скасував вибір
+            }
+
+            targetFileId = chosen.Id;
+            fileName = chosen.Name;
+            DriveFileId = chosen.Id;
+        }
+
+        if (string.IsNullOrWhiteSpace(targetFileId))
         {
             if (RequestMessageBox != null)
-                await RequestMessageBox("Google Drive", "Будь ласка, вкажіть ID файлу в Google Drive.");
+                await RequestMessageBox("Google Drive", "Будь ласка, оберіть файл або вкажіть його ID.");
             return;
         }
 
         IsBusy = true;
-        StatusMessage = "Завантаження файлу з Google Drive...";
+        StatusMessage = $"Завантаження '{fileName}' з Google Drive...";
         try
         {
-            var tempPath = Path.Combine(Path.GetTempPath(), $"gdrive_download_{DateTime.Now:yyyyMMddHHmmss}.xml");
-            await _driveService.DownloadFileAsync(DriveFileId.Trim(), tempPath);
+            var tempPath = Path.Combine(Path.GetTempPath(), $"gdrive_{fileName}");
+            await _driveService.DownloadFileAsync(targetFileId, tempPath);
 
             XmlPath = tempPath;
             PopulateMetadata(tempPath);
             Search();
 
-            StatusMessage = "Файл успішно завантажено з Google Drive.";
+            StatusMessage = $"Файл '{fileName}' успішно завантажено з Google Drive.";
         }
         catch (Exception ex)
         {

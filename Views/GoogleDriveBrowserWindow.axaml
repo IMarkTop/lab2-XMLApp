@@ -1,0 +1,86 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="using:XMLApp.Models"
+        x:Class="XMLApp.Views.GoogleDriveBrowserWindow"
+        Title="Огляд файлів на Google Drive"
+        Width="700" Height="450"
+        WindowStartupLocation="CenterOwner"
+        Background="#f8fafc">
+
+    <Grid Margin="16" RowDefinitions="Auto,*,Auto">
+
+        <!-- Верхня панель пошуку та оновлення -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+            <TextBox Name="SearchBox"
+                     Grid.Column="0"
+                     PlaceholderText="Фільтрувати за назвою файлу..."
+                     Margin="0,0,8,0"
+                     KeyUp="SearchBox_KeyUp" />
+            <Button Name="RefreshButton"
+                    Grid.Column="1"
+                    Content="🔄 Оновити список"
+                    Background="#f1f5f9"
+                    Foreground="#334155"
+                    Click="RefreshButton_Click" />
+        </Grid>
+
+        <!-- Таблиця файлів -->
+        <Border Grid.Row="1"
+                Background="White"
+                BorderBrush="#cbd5e1"
+                BorderThickness="1"
+                CornerRadius="6">
+            <DataGrid Name="FilesGrid"
+                      x:DataType="models:GoogleDriveFileInfo"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      GridLinesVisibility="All"
+                      DoubleTapped="FilesGrid_DoubleTapped">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Назва файлу"
+                                        Binding="{Binding Name}"
+                                        Width="2*" />
+                    <DataGridTextColumn Header="Розмір"
+                                        Binding="{Binding SizeFormatted}"
+                                        Width="90" />
+                    <DataGridTextColumn Header="Дата зміни"
+                                        Binding="{Binding ModifiedFormatted}"
+                                        Width="140" />
+                    <DataGridTextColumn Header="Google Drive ID"
+                                        Binding="{Binding Id}"
+                                        Width="1.5*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Нижня панель кнопок дій -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,12,0,0">
+            <TextBlock Name="StatusText"
+                       Grid.Column="0"
+                       VerticalAlignment="Center"
+                       FontSize="12"
+                       Foreground="#64748b" />
+
+            <Button Name="CancelButton"
+                    Grid.Column="2"
+                    Content="Скасувати"
+                    Width="100"
+                    HorizontalContentAlignment="Center"
+                    Background="#f1f5f9"
+                    Foreground="#334155"
+                    Margin="0,0,8,0"
+                    Click="CancelButton_Click" />
+
+            <Button Name="SelectButton"
+                    Grid.Column="3"
+                    Content="Завантажити"
+                    Width="130"
+                    HorizontalContentAlignment="Center"
+                    Background="#2563eb"
+                    Foreground="White"
+                    FontWeight="SemiBold"
+                    Click="SelectButton_Click" />
+        </Grid>
+
+    </Grid>
+</Window>
