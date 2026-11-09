@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using XMLApp.Models;
 
 namespace XMLApp.Services;
 
@@ -9,6 +11,11 @@ namespace XMLApp.Services;
 /// </summary>
 public interface IGoogleDriveService
 {
+    /// <summary>
+    /// Отримує список доступних файлів XML/каталогів з Google Drive для перегляду користувачем.
+    /// </summary>
+    Task<List<GoogleDriveFileInfo>> ListFilesAsync();
+
     /// <summary>
     /// Завантажує файл з Google Drive за його ідентифікатором у локальний файл.
     /// </summary>
