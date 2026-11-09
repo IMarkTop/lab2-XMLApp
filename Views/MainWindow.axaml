@@ -272,6 +272,7 @@
             <DataGrid ItemsSource="{Binding SearchResults}"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
+                      CanUserResizeColumns="True"
                       GridLinesVisibility="All"
                       BorderThickness="0">
                 <DataGrid.Columns>
