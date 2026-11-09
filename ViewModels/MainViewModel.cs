@@ -355,9 +355,13 @@ public partial class MainViewModel : ViewModelBase
         if (RequestSaveFileDialog != null)
         {
             outPath = await RequestSaveFileDialog("Зберегти згенерований HTML-звіт", ".html", "HTML файли (*.html)");
+            if (string.IsNullOrEmpty(outPath))
+            {
+                StatusMessage = "Збереження HTML-звіту скасовано.";
+                return; // Скасовано користувачем (натиснуто [X] або "Скасувати")
+            }
         }
-
-        if (string.IsNullOrEmpty(outPath))
+        else
         {
             outPath = Path.Combine(Path.GetDirectoryName(XmlPath) ?? AppDomain.CurrentDomain.BaseDirectory, "catalog_transformed.html");
         }
@@ -414,9 +418,13 @@ public partial class MainViewModel : ViewModelBase
         if (RequestSaveFileDialog != null)
         {
             outPath = await RequestSaveFileDialog("Зберегти відфільтровані результати", ext, filterName);
+            if (string.IsNullOrEmpty(outPath))
+            {
+                StatusMessage = "Збереження скасовано користувачем.";
+                return; // Скасовано користувачем (натиснуто [X] або "Скасувати")
+            }
         }
-
-        if (string.IsNullOrEmpty(outPath))
+        else
         {
             outPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, defaultFileName);
         }
