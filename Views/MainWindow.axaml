@@ -7,16 +7,14 @@
         x:Class="XMLApp.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="XMLApp">
+        Title="Кафедральна бібліотека (XML/XSLT/Google Drive)">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <TextBox Text="{Binding Greeting}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
+    <TextBlock Text="{Binding StatusMessage}"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center" />
 
 </Window>
