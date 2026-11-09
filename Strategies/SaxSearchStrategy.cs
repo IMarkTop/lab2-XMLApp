@@ -7,7 +7,7 @@ using XMLApp.Models;
 namespace XMLApp.Strategies;
 
 /// <summary>
-/// Реалізація стратегії парсингу на базі SAX API.
+/// Реалізація стратегії парсингу на базі SAX API (System.Xml.XmlReader).
 /// Здійснює швидкий потоковий низькорівневий розбір без завантаження всього DOM-дерева в пам'ять.
 /// </summary>
 public class SaxSearchStrategy : IXmlSearchStrategy
@@ -21,51 +21,53 @@ public class SaxSearchStrategy : IXmlSearchStrategy
             return results;
         }
 
-        var settings = new XmlReaderSettings
-        {
-            IgnoreWhitespace = true,
-            IgnoreComments = true
-        };
-
-        using var reader = XmlReader.Create(xmlPath, settings);
+        using var reader = XmlReader.Create(xmlPath);
+        Publication? currentPub = null;
+        string? currentTag = null;
 
         while (reader.Read())
         {
-            if (reader.NodeType == XmlNodeType.Element && reader.Name == "Publication")
+            if (reader.NodeType == XmlNodeType.Element)
             {
-                var pub = new Publication
+                if (reader.Name == "Publication")
                 {
-                    Id = reader.GetAttribute("id") ?? string.Empty,
-                    Author = reader.GetAttribute("author") ?? string.Empty,
-                    Category = reader.GetAttribute("category") ?? string.Empty,
-                    Faculty = reader.GetAttribute("faculty") ?? string.Empty,
-                    Department = reader.GetAttribute("department") ?? string.Empty,
-                    Year = reader.GetAttribute("year") ?? string.Empty
-                };
-
-                // Зчитуємо дочірні елементи вузла <Publication>
-                using (var subtree = reader.ReadSubtree())
-                {
-                    while (subtree.Read())
+                    currentPub = new Publication
                     {
-                        if (subtree.NodeType == XmlNodeType.Element)
-                        {
-                            if (subtree.Name == "Title")
-                            {
-                                pub.Title = subtree.ReadElementContentAsString().Trim();
-                            }
-                            else if (subtree.Name == "Annotation")
-                            {
-                                pub.Annotation = subtree.ReadElementContentAsString().Trim();
-                            }
-                        }
-                    }
+                        Id = reader.GetAttribute("id") ?? string.Empty,
+                        Author = reader.GetAttribute("author") ?? string.Empty,
+                        Category = reader.GetAttribute("category") ?? string.Empty,
+                        Faculty = reader.GetAttribute("faculty") ?? string.Empty,
+                        Department = reader.GetAttribute("department") ?? string.Empty,
+                        Year = reader.GetAttribute("year") ?? string.Empty
+                    };
                 }
-
-                if (Matches(pub, criteria))
+                else if (currentPub != null)
                 {
-                    results.Add(pub);
+                    currentTag = reader.Name;
                 }
+            }
+            else if (reader.NodeType == XmlNodeType.Text && currentPub != null)
+            {
+                if (currentTag == "Title")
+                {
+                    currentPub.Title = reader.Value.Trim();
+                }
+                else if (currentTag == "Annotation")
+                {
+                    currentPub.Annotation = reader.Value.Trim();
+                }
+            }
+            else if (reader.NodeType == XmlNodeType.EndElement)
+            {
+                if (reader.Name == "Publication" && currentPub != null)
+                {
+                    if (Matches(currentPub, criteria))
+                    {
+                        results.Add(currentPub);
+                    }
+                    currentPub = null;
+                }
+                currentTag = null;
             }
         }
 
